@@ -114,6 +114,59 @@ public class Bb implements Serializable {
         this.conversation = new StringBuilder(conversation);
     }
 
+
+
+    /// -----------------------------------------TP1-------------------------------------
+
+    /**
+     * Mode debug activé ou non.
+     */
+    private boolean debug = false;
+
+    /**
+     * Texte JSON de la requête envoyée à l'API.
+     */
+    private String texteRequeteJson;
+
+    /**
+     * Texte JSON de la réponse retournée par l'API.
+     */
+    private String texteReponseJson;
+
+
+    public boolean isDebug() {
+        return debug;
+    }
+
+    public void setDebug(boolean debug) {
+        this.debug = debug;
+    }
+
+    public String getTexteRequeteJson() {
+        return texteRequeteJson;
+    }
+
+    public void setTexteRequeteJson(String texteRequeteJson) {
+        this.texteRequeteJson = texteRequeteJson;
+    }
+
+    public String getTexteReponseJson() {
+        return texteReponseJson;
+    }
+
+    public void setTexteReponseJson(String texteReponseJson) {
+        this.texteReponseJson = texteReponseJson;
+    }
+
+    public void toggleDebug() {
+        this.setDebug(!isDebug());
+    }
+
+    /// ----------------------------------------------------------------------------------
+
+
+
+
     /**
      * Envoie la question au serveur.
      * En attendant de l'envoyer à un LLM, le serveur fait un traitement quelconque, juste pour tester :

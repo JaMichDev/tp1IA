@@ -1,5 +1,7 @@
 package ht.fds.mbds.michel.jsf;
 
+import ht.fds.mbds.michel.llm.JsonAdapterPourGemini;
+import ht.fds.mbds.michel.llm.LlmInteraction;
 import ht.fds.mbds.michel.service.Modificateur;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
@@ -10,6 +12,7 @@ import jakarta.inject.Named;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -118,6 +121,7 @@ public class Bb implements Serializable {
 
     /// -----------------------------------------TP1-------------------------------------
 
+    /// 1)
     /**
      * Mode debug activé ou non.
      */
@@ -162,6 +166,12 @@ public class Bb implements Serializable {
         this.setDebug(!isDebug());
     }
 
+    /// 2)
+    // 1. Ajouter l'injection de JsonAdapter dans Bb
+    @Inject
+    private JsonAdapterPourGemini jsonAdapter;
+
+
     /// ----------------------------------------------------------------------------------
 
 
@@ -191,9 +201,31 @@ public class Bb implements Serializable {
             // Invalide la liste pour changer le rôle système
             this.roleSystemeChangeable = false;
         }
-        //this.reponse += this.modificateur.modifier(this.question, roleSystemePourModification);
-        this.reponse += this.modificateur.modifier_bonus(this.question, roleSystemePourModification);
 
+
+        ///-------TP1 : 2. Modifier la méthode envoyer() ----------------------------------
+
+        //this.reponse += this.modificateur.modifier(this.question, roleSystemePourModification);
+        // this.reponse += this.modificateur.modifier_bonus(this.question, roleSystemePourModification); // On remplace cette code par le bloc ci-dessous
+
+        // Envoyer le rôle système au début de la conversation
+        if (this.conversation.isEmpty()) {
+            jsonAdapter.setSystemRole(this.roleSysteme);
+        }
+
+        try {
+            LlmInteraction interaction = jsonAdapter.envoyerRequete(question);
+            this.reponse = interaction.reponseExtraite();
+            this.texteRequeteJson = interaction.questionJson();
+            this.texteReponseJson = interaction.reponseJson();
+        } catch (Exception e) {
+            FacesMessage message =
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                            "Problème de connexion avec l'API du LLM",
+                            "Problème de connexion avec l'API du LLM" + e.getMessage()
+                                    + "\n" + Arrays.toString(e.getStackTrace()));
+            facesContext.addMessage(null, message);
+        }
 
         
         // La conversation contient l'historique des questions-réponses depuis le début.

@@ -27,8 +27,10 @@ public class Bb implements Serializable {
     /**
      * Rôle "système" que l'on attribuera plus tard à un LLM.
      * Possible d'écrire un nouveau rôle dans la liste déroulante.
+     * Rôle "système" choisi par l'utilisateur dans la liste déroulante.
      */
     private String roleSysteme;
+
 
     /**
      * Quand le rôle est choisi par l'utilisateur dans la liste déroulante,
@@ -56,6 +58,7 @@ public class Bb implements Serializable {
 
     /**
      * Service pour modifier la question et générer la réponse.
+     * Service pour modifier la question (TP0, non utilisé dans TP1).
      */
     @Inject
     private Modificateur modificateur;
@@ -69,6 +72,13 @@ public class Bb implements Serializable {
      */
     @Inject
     private FacesContext facesContext;
+
+
+    /// 2)--------------------TP1----------------------------
+    // 1. Ajouter l'injection de jsonAdapterPourGemini dans Bb
+    @Inject
+    private JsonAdapterPourGemini jsonAdapterPourGemini;
+    ///-------------------------------------------------------
 
     /**
      * Obligatoire pour un bean CDI (classe gérée par CDI), s'il y a un autre constructeur.
@@ -166,12 +176,6 @@ public class Bb implements Serializable {
         this.setDebug(!isDebug());
     }
 
-    /// 2)
-    // 1. Ajouter l'injection de JsonAdapter dans Bb
-    @Inject
-    private JsonAdapterPourGemini jsonAdapter;
-
-
     /// ----------------------------------------------------------------------------------
 
 
@@ -196,6 +200,7 @@ public class Bb implements Serializable {
 
         // Traite la question pour construire la réponse.
         String roleSystemePourModification = null;
+        
         if (this.conversation.isEmpty()) { // Si la conversation n'a pas encore commencé
             roleSystemePourModification = this.roleSysteme; // Pour Modificateur.modifier()
             // Invalide la liste pour changer le rôle système
@@ -210,11 +215,12 @@ public class Bb implements Serializable {
 
         // Envoyer le rôle système au début de la conversation
         if (this.conversation.isEmpty()) {
-            jsonAdapter.setSystemRole(this.roleSysteme);
+            // Envoie le rôle système au JsonAdapter
+            jsonAdapterPourGemini.setSystemRole(this.roleSysteme);
         }
 
         try {
-            LlmInteraction interaction = jsonAdapter.envoyerRequete(question);
+            LlmInteraction interaction = jsonAdapterPourGemini.envoyerRequete(question);
             this.reponse = interaction.reponseExtraite();
             this.texteRequeteJson = interaction.questionJson();
             this.texteReponseJson = interaction.reponseJson();
@@ -248,6 +254,7 @@ public class Bb implements Serializable {
 
     /**
      * Pour afficher la conversation dans le textArea de la page JSF.
+     * Ajoute la dernière question/réponse à la conversation.
      */
     private void afficherConversation() {
         this.conversation.append("== User:\n").append(question).append("\n== Serveur:\n").append(reponse).append("\n");
@@ -279,6 +286,15 @@ public class Bb implements Serializable {
                     are you tell them the average price of a meal.
                     """;
             this.listeRolesSysteme.add(new SelectItem(role, "Guide touristique"));
+
+            // ✅ Rôle 4 (BONUS) : Coach Motivant
+            role = """
+                    Tu es un coach de vie ultra-motivant et enthousiaste.
+                    Tu réponds toujours avec beaucoup d'énergie et d'encouragements,
+                    en utilisant des métaphores sportives et en terminant chaque réponse
+                    par un slogan motivant en majuscules.
+                    """;
+            this.listeRolesSysteme.add(new SelectItem(role, "Coach Motivant 🏆"));
         }
 
         return this.listeRolesSysteme;

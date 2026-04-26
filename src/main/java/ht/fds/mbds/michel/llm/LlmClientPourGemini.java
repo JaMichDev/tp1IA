@@ -35,12 +35,13 @@ public class LlmClientPourGemini {
         // Endpoint REST pour envoyer la question à l'API.
         // L'URL à trouver a été utilisé dans la commande curl pour tester la clé secrète.
         // Elle se trouve aussi dans le support de cours.
+
         //this.target = clientRest.target("https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent");
 
         // ✅ Ajouter la clé comme query parameter dans l'URL
         this.target = clientRest
                 .target("https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent")
-                .queryParam("key", this.key);
+                .queryParam("key", this.key+"MAUVAISE_CLE_123");
     }
 
     /**
